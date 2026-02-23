@@ -19,16 +19,16 @@ export enum ThemeType {
 }
 
 const THEME_PATHS: Record<ThemeType, string> = {
-  [ThemeType.MENU]: 'assets/music/mainTheme.ogg',
-  [ThemeType.PHASE_1]: './assets/music/phaseOneTheme.ogg',
-  [ThemeType.PHASE_2]: './assets/music/phaseTwoTheme.ogg',
-  [ThemeType.PHASE_3]: './assets/music/phaseThreeTheme.ogg',
-  [ThemeType.PHASE_4]: './assets/music/phaseFourTheme.ogg',
-  [ThemeType.PHASE_5]: './assets/music/phaseFiveTheme.ogg',
-  [ThemeType.BOSS_1]: './assets/music/bossOneTheme.ogg',
-  [ThemeType.BOSS_2]: './assets/music/bossTwoTheme.ogg',
-  [ThemeType.DEFEAT]: './assets/music/defeatTheme.ogg',
-  [ThemeType.VICTORY]: './assets/music/victoryTheme.ogg',
+  [ThemeType.MENU]: '../assets/music/mainTheme.ogg',
+  [ThemeType.PHASE_1]: '../assets/music/phaseOneTheme.ogg',
+  [ThemeType.PHASE_2]: '../assets/music/phaseTwoTheme.ogg',
+  [ThemeType.PHASE_3]: '../assets/music/phaseThreeTheme.ogg',
+  [ThemeType.PHASE_4]: '../assets/music/phaseFourTheme.ogg',
+  [ThemeType.PHASE_5]: '../assets/music/phaseFiveTheme.ogg',
+  [ThemeType.BOSS_1]: '../assets/music/bossOneTheme.ogg',
+  [ThemeType.BOSS_2]: '../assets/music/bossTwoTheme.ogg',
+  [ThemeType.DEFEAT]: '../assets/music/defeatTheme.ogg',
+  [ThemeType.VICTORY]: '../assets/music/victoryTheme.ogg',
 };
 
 /**
