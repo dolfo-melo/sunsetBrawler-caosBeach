@@ -1,5 +1,6 @@
 
 import { EntityState } from '../types';
+import { MenuMusic } from '../assets/music/mainTheme.ogg';
 
 /**
  * SECTION: AUDIO CONSTANTS
@@ -19,7 +20,7 @@ export enum ThemeType {
 }
 
 const THEME_PATHS: Record<ThemeType, string> = {
-  [ThemeType.MENU]: '../assets/music/mainTheme.ogg',
+  [ThemeType.MENU]: 'MenuMusic',
   [ThemeType.PHASE_1]: '../assets/music/phaseOneTheme.ogg',
   [ThemeType.PHASE_2]: '../assets/music/phaseTwoTheme.ogg',
   [ThemeType.PHASE_3]: '../assets/music/phaseThreeTheme.ogg',
