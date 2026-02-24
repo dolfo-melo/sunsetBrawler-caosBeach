@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { GameEngine } from './game/GameEngine';
 import { GameStats } from './types';
-import { audioManager, ThemeType } from './game/AudioManager';
+import { audioManager, ThemeType } from '../src/game/AudioManager';
 
 const App: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
