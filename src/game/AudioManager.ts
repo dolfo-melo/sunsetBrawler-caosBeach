@@ -19,7 +19,7 @@ export enum ThemeType {
 }
 
 const THEME_PATHS: Record<ThemeType, string> = {
-  [ThemeType.MENU]: '../public/music/menuTheme.ogg',
+  [ThemeType.MENU]: '../public/music/mainTheme.ogg',
   [ThemeType.PHASE_1]: '../public/music/phaseOneTheme.ogg',
   [ThemeType.PHASE_2]: '../public/music/phaseTwoTheme.ogg',
   [ThemeType.PHASE_3]: '../public/music/phaseThreeTheme.ogg',
