@@ -1,4 +1,5 @@
 import { EntityState, Rect } from '../types';
+import { SpriteManager } from './SpriteManager';
 
 /**
  * SECTION: ANIMATION CONFIGURATION
@@ -14,15 +15,23 @@ export interface AnimationConfig {
 }
 
 export const ANIMATION_DATA: Record<EntityState, AnimationConfig> = {
-  [EntityState.IDLE]: { frames: 4, speed: 12, loop: true },
+  [EntityState.IDLE]: { frames: 6, speed: 10, loop: true },
   [EntityState.WALKING]: { frames: 6, speed: 8, loop: true },
-  [EntityState.ATTACKING_JAB]: { frames: 4, speed: 5, loop: false, activeFrames: [1, 2] },
+  [EntityState.ATTACKING_JAB]: { frames: 6, speed: 5, loop: false, activeFrames: [2, 3] },
   [EntityState.ATTACKING_STRAIGHT]: { frames: 6, speed: 6, loop: false, activeFrames: [2, 3, 4] },
   [EntityState.WINDING_UP]: { frames: 3, speed: 10, loop: true },
   [EntityState.DODGING]: { frames: 4, speed: 5, loop: false },
   [EntityState.HIT]: { frames: 2, speed: 10, loop: false },
   [EntityState.DEAD]: { frames: 5, speed: 12, loop: false },
 };
+
+/**
+ * Maps an EntityState to a sprite key and optionally overrides the frame count.
+ */
+export interface SpriteStateMapping {
+  spriteKey: string;
+  frameCount?: number;
+}
 
 export class Entity {
   x: number;
@@ -44,6 +53,13 @@ export class Entity {
   
   currentFrame: number = 0;
   animationTick: number = 0;
+
+  /** Optional sprite manager for sprite-based rendering */
+  protected spriteManager: SpriteManager | null = null;
+  /** Maps EntityState → sprite key for sprite-based rendering */
+  protected spriteStateMap: Map<EntityState, SpriteStateMapping> = new Map();
+  /** Scale multiplier for the rendered sprite size */
+  protected spriteScale: number = 1.0;
 
   constructor(x: number, y: number, hp: number) {
     this.x = x;
@@ -164,11 +180,77 @@ export class Entity {
   }
 
   /**
-   * SECTION: RENDERING (PROCEDURAL DRAWING)
+   * SECTION: RENDERING
+   * Summary: Tries sprite-based rendering first; falls back to procedural drawing
+   * if no sprite is available for the current state.
+   */
+  draw(ctx: CanvasRenderingContext2D) {
+    // Attempt sprite rendering
+    if (this.spriteManager) {
+      const mapping = this.spriteStateMap.get(this.state);
+      if (mapping && this.spriteManager.isReady(mapping.spriteKey)) {
+        const isInvincible = this.invincibleTimer > 0;
+        const flickerAlpha = isInvincible ? (Math.floor(Date.now() / 50) % 2 === 0 ? 0.3 : 1) : 1;
+
+        // Draw shadow
+        const w = this.width * this.scale;
+        const s = this.scale;
+        ctx.fillStyle = 'rgba(0,0,0,0.2)';
+        ctx.beginPath();
+        ctx.ellipse(this.x, this.y, w / 1.5, 6 * s, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Handle HIT shake
+        let drawX = this.x;
+        if (this.state === EntityState.HIT) {
+          drawX += Math.sin(Date.now() / 20) * 4;
+        }
+
+        // Handle DEAD rotation — draw falling sprite
+        if (this.state === EntityState.DEAD) {
+          const fall = (this.currentFrame / 4);
+          ctx.save();
+          ctx.translate(drawX, this.y);
+          ctx.rotate(fall * Math.PI / 2);
+          ctx.translate(0, fall * 20 * s);
+          
+          this.spriteManager.drawFrame(
+            ctx, mapping.spriteKey, this.currentFrame,
+            0, 0, this.facing, this.spriteScale, flickerAlpha
+          );
+          ctx.restore();
+        } else {
+          this.spriteManager.drawFrame(
+            ctx, mapping.spriteKey, this.currentFrame,
+            drawX, this.y, this.facing, this.spriteScale, flickerAlpha
+          );
+        }
+
+        // HP Bar above character
+        if (this.hp < this.maxHp && this.hp > 0) {
+          const barW = this.width * this.scale;
+          const barH = this.height * this.scale;
+          const barWidth = 40 * s;
+          const barHeight = 4 * s;
+          ctx.fillStyle = '#1e293b';
+          ctx.fillRect(this.x - barWidth/2, this.y - barH - 25 * s, barWidth, barHeight);
+          ctx.fillStyle = this.hp < 30 ? '#ef4444' : '#22c55e';
+          ctx.fillRect(this.x - barWidth/2, this.y - barH - 25 * s, (this.hp / this.maxHp) * barWidth, barHeight);
+        }
+        return;
+      }
+    }
+
+    // FALLBACK: Procedural drawing for entities without sprites
+    this.drawProcedural(ctx);
+  }
+
+  /**
+   * SECTION: PROCEDURAL RENDERING (FALLBACK)
    * Summary: Instead of static images, characters are built from geometric shapes.
    * Parts move dynamically based on the current state (breathing in IDLE, swinging in ATTACK).
    */
-  draw(ctx: CanvasRenderingContext2D) {
+  protected drawProcedural(ctx: CanvasRenderingContext2D) {
     const w = this.width * this.scale;
     const h = this.height * this.scale;
     const s = this.scale;

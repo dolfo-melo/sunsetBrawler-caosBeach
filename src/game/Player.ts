@@ -1,10 +1,12 @@
 
 import { Entity } from './Entity';
 import { EntityState } from '../types';
+import { SpriteManager } from './SpriteManager';
 
 /**
  * SECTION: PLAYER CLASS
  * Summary: Specialized entity that handles user input and unique abilities.
+ * Uses sprite sheet animations for visual rendering.
  * Includes the "Chaos Pulse" special attack which is a high-damage radial blast.
  */
 export class Player extends Entity {
@@ -24,7 +26,41 @@ export class Player extends Entity {
 
   constructor(x: number, y: number) {
     super(x, y, 100);
-    this.speed = 5.5;
+    this.speed = 6.5;
+
+    // Initialize sprite system
+    this.spriteManager = new SpriteManager();
+    this.spriteScale = 0.8;
+
+    // Register sprite sheets
+    this.spriteManager.register('idle', {
+      path: '/sprite/playerIdleSprite.png',
+      frameCount: 6,
+      columns: 6,
+      rows: 1,
+    });
+    this.spriteManager.register('walk', {
+      path: '/sprite/playerWalkSprite.png',
+      frameCount: 6,
+      columns: 3,
+      rows: 2,
+    });
+    this.spriteManager.register('punch', {
+      path: '/sprite/playerPunchSprite.png',
+      frameCount: 6,
+      columns: 6,
+      rows: 1,
+    });
+
+    // Map EntityStates to sprite keys
+    this.spriteStateMap.set(EntityState.IDLE, { spriteKey: 'idle' });
+    this.spriteStateMap.set(EntityState.WALKING, { spriteKey: 'walk' });
+    this.spriteStateMap.set(EntityState.ATTACKING_JAB, { spriteKey: 'punch' });
+    this.spriteStateMap.set(EntityState.ATTACKING_STRAIGHT, { spriteKey: 'punch' });
+    this.spriteStateMap.set(EntityState.DODGING, { spriteKey: 'idle' });
+    this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'idle' });
+    this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'idle' });
+    this.spriteStateMap.set(EntityState.WINDING_UP, { spriteKey: 'idle' });
   }
 
   /**
@@ -129,6 +165,7 @@ export class Player extends Entity {
    * SECTION: RENDERING
    * Summary: Adds visual effects for special attacks including 
    * a preview zone during charging and a glowing blast wave.
+   * The character itself is rendered via sprite sheets (handled by Entity.draw).
    */
   draw(ctx: CanvasRenderingContext2D) {
     // Draw telegraph preview while charging
@@ -171,6 +208,7 @@ export class Player extends Entity {
       ctx.stroke();
     }
     
+    // Render the character (sprite or procedural fallback via Entity.draw)
     super.draw(ctx);
   }
 
@@ -179,3 +217,4 @@ export class Player extends Entity {
     return '#3b82f6';
   }
 }
+
