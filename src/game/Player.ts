@@ -30,26 +30,30 @@ export class Player extends Entity {
 
     // Initialize sprite system
     this.spriteManager = new SpriteManager();
-    this.spriteScale = 0.8;
+    this.spriteScale = 0.65;
 
-    // Register sprite sheets
+    // Register sprite sheets with per-animation vertical offsets
+    // offsetY corrects height differences between sprite sheets
     this.spriteManager.register('idle', {
       path: '/sprite/playerIdleSprite.png',
       frameCount: 6,
       columns: 6,
       rows: 1,
+      offsetY: 0,
     });
     this.spriteManager.register('walk', {
       path: '/sprite/playerWalkSprite.png',
       frameCount: 6,
       columns: 3,
       rows: 2,
+      offsetY: -6, // Walk frames are taller (2-row grid), pull down to align feet
     });
     this.spriteManager.register('punch', {
       path: '/sprite/playerPunchSprite.png',
       frameCount: 6,
       columns: 6,
       rows: 1,
+      offsetY: 0,
     });
 
     // Map EntityStates to sprite keys

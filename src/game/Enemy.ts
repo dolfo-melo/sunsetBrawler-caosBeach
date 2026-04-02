@@ -1,6 +1,7 @@
 
 import { Entity } from './Entity';
 import { EntityState, Rect } from '../types';
+import { SpriteManager } from './SpriteManager';
 
 interface Projectile {
     x: number;
@@ -45,6 +46,86 @@ export class Enemy extends Entity {
     this.color = color;
     this.isBoss = isBoss;
     this.scale = scale;
+
+    // Setup sprite rendering for bosses
+    if (isBoss) {
+      this.spriteManager = new SpriteManager();
+
+      if (hp >= 500) {
+        // BossTwo (Phase 5) — Crab sprite sheet (7 columns × 5 rows, 5 frames per animation)
+        // Row 0: Idle, Row 1: Walk, Row 2: Attack 1, Row 3: Attack 2, Row 4: Death
+        this.spriteScale = 1.8;
+
+        this.spriteManager.register('bossTwo_idle', {
+          path: '/sprite/bossTwoSprite.webp',
+          frameCount: 5,
+          columns: 7,
+          rows: 5,
+          startFrame: 0,  // Row 0
+          offsetY: 0,
+        });
+        this.spriteManager.register('bossTwo_walk', {
+          path: '/sprite/bossTwoSprite.webp',
+          frameCount: 5,
+          columns: 7,
+          rows: 5,
+          startFrame: 7,  // Row 1
+          offsetY: 0,
+        });
+        this.spriteManager.register('bossTwo_attack1', {
+          path: '/sprite/bossTwoSprite.webp',
+          frameCount: 5,
+          columns: 7,
+          rows: 5,
+          startFrame: 14, // Row 2
+          offsetY: 0,
+        });
+        this.spriteManager.register('bossTwo_attack2', {
+          path: '/sprite/bossTwoSprite.webp',
+          frameCount: 5,
+          columns: 7,
+          rows: 5,
+          startFrame: 21, // Row 3
+          offsetY: 0,
+        });
+        this.spriteManager.register('bossTwo_death', {
+          path: '/sprite/bossTwoSprite.webp',
+          frameCount: 5,
+          columns: 7,
+          rows: 5,
+          startFrame: 28, // Row 4
+          offsetY: 0,
+        });
+
+        this.spriteStateMap.set(EntityState.IDLE, { spriteKey: 'bossTwo_idle' });
+        this.spriteStateMap.set(EntityState.WALKING, { spriteKey: 'bossTwo_walk' });
+        this.spriteStateMap.set(EntityState.ATTACKING_JAB, { spriteKey: 'bossTwo_attack1' });
+        this.spriteStateMap.set(EntityState.ATTACKING_STRAIGHT, { spriteKey: 'bossTwo_attack2' });
+        this.spriteStateMap.set(EntityState.WINDING_UP, { spriteKey: 'bossTwo_idle' });
+        this.spriteStateMap.set(EntityState.DODGING, { spriteKey: 'bossTwo_walk' });
+        this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'bossTwo_idle' });
+        this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'bossTwo_death' });
+      } else {
+        // BossOne (Phase 3) — Muscular walk sprite (3 columns × 2 rows, 6 frames)
+        this.spriteScale = 1.2;
+        this.spriteManager.register('bossOne_walk', {
+          path: '/sprite/bossWalkSprite.png',
+          frameCount: 6,
+          columns: 3,
+          rows: 2,
+          offsetY: -6,
+        });
+
+        this.spriteStateMap.set(EntityState.IDLE, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.WALKING, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.ATTACKING_JAB, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.ATTACKING_STRAIGHT, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.WINDING_UP, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.DODGING, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'bossOne_walk' });
+      }
+    }
   }
 
   setTarget(entity: Entity) {
@@ -69,9 +150,9 @@ export class Enemy extends Entity {
 
     // Boss Ability: Projectiles (Phase 5)
     if (this.isBoss && this.maxHp >= 500 && this.projectileCooldown === 0 && dist > 150) {
-      if (Math.random() < 0.02) {
+      if (Math.random() < 0.01) {
         this.isCastingProjectiles = true;
-        this.castTimer = 60;
+        this.castTimer = 90;
         this.setState(EntityState.IDLE);
         return;
       }
@@ -94,10 +175,12 @@ export class Enemy extends Entity {
       this.y += (dy / dist) * this.speed;
     } else {
       this.setState(EntityState.IDLE);
-      if (this.aiTick % (this.isBoss ? 20 : 40) === 0) {
+      // BossTwo (Phase 5) attacks slower than BossOne (Phase 3)
+      const bossInterval = this.maxHp >= 500 ? 35 : 20;
+      if (this.aiTick % (this.isBoss ? bossInterval : 40) === 0) {
         this.nextAttackType = Math.random() > 0.4 ? EntityState.ATTACKING_JAB : EntityState.ATTACKING_STRAIGHT;
         this.setState(EntityState.WINDING_UP);
-        this.windupTimer = 15;
+        this.windupTimer = this.maxHp >= 500 ? 20 : 15;
       }
     }
   }
@@ -156,19 +239,19 @@ export class Enemy extends Entity {
     // Handle Projectile Cycle
     if (this.isCastingProjectiles) {
       this.castTimer--;
-      if (this.castTimer % 20 === 0 && this.castTimer > 0) {
+      if (this.castTimer % 30 === 0 && this.castTimer > 0) {
           const angle = Math.atan2(this.target!.y - this.y, this.target!.x - this.x);
           this.projectiles.push({
               x: this.x,
               y: this.y - 45,
-              vx: Math.cos(angle) * 7,
-              vy: Math.sin(angle) * 7,
+              vx: Math.cos(angle) * 5,
+              vy: Math.sin(angle) * 5,
               life: 140
           });
       }
       if (this.castTimer <= 0) {
           this.isCastingProjectiles = false;
-          this.projectileCooldown = 450;
+          this.projectileCooldown = 500;
       }
     }
     if (this.projectileCooldown > 0) this.projectileCooldown--;

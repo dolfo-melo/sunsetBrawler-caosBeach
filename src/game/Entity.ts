@@ -36,8 +36,8 @@ export interface SpriteStateMapping {
 export class Entity {
   x: number;
   y: number;
-  width: number = 40;
-  height: number = 60;
+  width: number = 50;
+  height: number = 80;
   hp: number;
   maxHp: number;
   state: EntityState = EntityState.IDLE;
@@ -76,11 +76,15 @@ export class Entity {
   getHitbox(): Rect {
     const w = this.width * this.scale;
     const h = this.height * this.scale;
+    // Hitbox is centered on x, anchored at feet (this.y)
+    // Shrink hitbox slightly inward so it matches the character body, not full sprite
+    const hitW = w * 0.7;
+    const hitH = h * 0.85;
     return {
-      x: this.x - w / 2,
-      y: this.y - h,
-      width: w,
-      height: h
+      x: this.x - hitW / 2,
+      y: this.y - hitH,
+      width: hitW,
+      height: hitH
     };
   }
 
@@ -90,17 +94,16 @@ export class Entity {
     // Only return a hitbox if the current animation frame is 'active' for damage
     if (!config.activeFrames.includes(this.currentFrame)) return null;
 
-    // ATTACK AREA REACH: Reverted to 35px for Jab and 55px for Straight
-    const baseReach = this.state === EntityState.ATTACKING_JAB ? 35 : 55;
+    // Attack reach: Jab is short-range, Straight is longer
+    const baseReach = this.state === EntityState.ATTACKING_JAB ? 40 : 60;
     const reach = baseReach * this.scale;
     const hWidth = reach;
-    const hHeight = 30 * this.scale;
-    const w = this.width * this.scale;
-    const h = this.height * this.scale;
+    const hHeight = 40 * this.scale;
+    const hitW = this.width * this.scale * 0.7;
     
     return {
-      x: this.facing === 1 ? this.x + w / 4 : this.x - w / 4 - hWidth,
-      y: this.y - h * 0.8,
+      x: this.facing === 1 ? this.x + hitW / 4 : this.x - hitW / 4 - hWidth,
+      y: this.y - this.height * this.scale * 0.65,
       width: hWidth,
       height: hHeight
     };
@@ -192,12 +195,12 @@ export class Entity {
         const isInvincible = this.invincibleTimer > 0;
         const flickerAlpha = isInvincible ? (Math.floor(Date.now() / 50) % 2 === 0 ? 0.3 : 1) : 1;
 
-        // Draw shadow
-        const w = this.width * this.scale;
+        // Draw shadow aligned to feet
         const s = this.scale;
+        const shadowW = this.width * s * 0.5;
         ctx.fillStyle = 'rgba(0,0,0,0.2)';
         ctx.beginPath();
-        ctx.ellipse(this.x, this.y, w / 1.5, 6 * s, 0, 0, Math.PI * 2);
+        ctx.ellipse(this.x, this.y, shadowW, 5 * s, 0, 0, Math.PI * 2);
         ctx.fill();
 
         // Handle HIT shake
@@ -226,16 +229,15 @@ export class Entity {
           );
         }
 
-        // HP Bar above character
+        // HP Bar above character — positioned relative to sprite height
         if (this.hp < this.maxHp && this.hp > 0) {
-          const barW = this.width * this.scale;
-          const barH = this.height * this.scale;
+          const spriteH = this.height * this.scale * this.spriteScale;
           const barWidth = 40 * s;
           const barHeight = 4 * s;
           ctx.fillStyle = '#1e293b';
-          ctx.fillRect(this.x - barWidth/2, this.y - barH - 25 * s, barWidth, barHeight);
+          ctx.fillRect(this.x - barWidth/2, this.y - spriteH - 10 * s, barWidth, barHeight);
           ctx.fillStyle = this.hp < 30 ? '#ef4444' : '#22c55e';
-          ctx.fillRect(this.x - barWidth/2, this.y - barH - 25 * s, (this.hp / this.maxHp) * barWidth, barHeight);
+          ctx.fillRect(this.x - barWidth/2, this.y - spriteH - 10 * s, (this.hp / this.maxHp) * barWidth, barHeight);
         }
         return;
       }

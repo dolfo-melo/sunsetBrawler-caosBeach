@@ -34,9 +34,16 @@ export class GameEngine {
 
   private hitstopTimer: number = 0;
 
+  // Delta time for frame-rate independent movement
+  private lastFrameTime: number = 0;
+  private deltaTime: number = 1; // normalized: 1.0 = 60fps
+
   // Visual decorations
   private clouds: {x: number, y: number, s: number}[] = [];
   private palms: {x: number, scale: number}[] = [];
+
+  // Phase background images
+  private backgroundImages: Map<number, HTMLImageElement> = new Map();
 
   constructor(canvas: HTMLCanvasElement, onStatsUpdate: (stats: GameStats) => void) {
     this.canvas = canvas;
@@ -48,6 +55,20 @@ export class GameEngine {
     // Initialize player at a starting ground position
     this.player = new Player(100, 450);
     this.spawnEnemies();
+
+    // Preload phase background images
+    const bgPaths: [number, string][] = [
+      [1, '/background/phaseOneBackground.png'],
+      [2, '/background/PhaseTwoBackground.png'],
+      [3, '/background/PhaseThreeBackground.png'],
+      [4, '/background/phaseFourBackground.png'],
+      [5, '/background/phaseFiveBackground.png'],
+    ];
+    bgPaths.forEach(([phase, path]) => {
+      const img = new Image();
+      img.src = path;
+      this.backgroundImages.set(phase, img);
+    });
 
     // Setup decorative background elements
     for(let i=0; i<10; i++) {
@@ -250,16 +271,19 @@ export class GameEngine {
   private draw() {
     this.ctx.clearRect(0, 0, 800, 600);
     
-    // Background Layer: Sky Gradient
-    const skyGrad = this.ctx.createLinearGradient(0, 0, 0, 250);
-    skyGrad.addColorStop(0, this.phase >= 4 ? '#020617' : '#0369a1');
-    skyGrad.addColorStop(1, this.phase >= 4 ? '#1e1b4b' : '#38bdf8');
-    this.ctx.fillStyle = skyGrad;
-    this.ctx.fillRect(0, 0, 800, 250);
-    
-    // Background Layer: Sand Ground
-    this.ctx.fillStyle = this.phase >= 4 ? '#1e293b' : '#fde68a';
-    this.ctx.fillRect(0, 250, 800, 350);
+    // Background Layer: Phase-specific image (with gradient fallback)
+    const bgImg = this.backgroundImages.get(this.phase);
+    if (bgImg && bgImg.complete && bgImg.naturalWidth > 0) {
+      this.ctx.drawImage(bgImg, 0, 0, 800, 600);
+    } else {
+      const skyGrad = this.ctx.createLinearGradient(0, 0, 0, 250);
+      skyGrad.addColorStop(0, this.phase >= 4 ? '#020617' : '#0369a1');
+      skyGrad.addColorStop(1, this.phase >= 4 ? '#1e1b4b' : '#38bdf8');
+      this.ctx.fillStyle = skyGrad;
+      this.ctx.fillRect(0, 0, 800, 250);
+      this.ctx.fillStyle = this.phase >= 4 ? '#1e293b' : '#fde68a';
+      this.ctx.fillRect(0, 250, 800, 350);
+    }
     
     // Environmental Decor
     this.ctx.fillStyle = 'rgba(255,255,255,0.1)';
@@ -274,20 +298,44 @@ export class GameEngine {
     const ents = [this.player, ...this.enemies].sort((a,b) => a.y - b.y);
     ents.forEach(e => e.draw(this.ctx));
     
-    // Navigation hint when screen is cleared
+    // Navigation hint when screen is cleared — flashing GO!
     if (this.isTransitioning && this.enemies.filter(e => e.state !== EntityState.DEAD).length === 0) {
-        this.ctx.fillStyle = '#ffffff';
-        this.ctx.font = '16px "Press Start 2P"';
-        this.ctx.textAlign = 'right';
-        this.ctx.fillText("GO! ->", 780, 400);
+        const t = Date.now();
+        const flash = Math.sin(t / 150) > 0; // alternate white/red
+        const pulse = 1 + Math.sin(t / 200) * 0.15; // size pulse 0.85–1.15
+        const fontSize = Math.round(28 * pulse);
+
+        this.ctx.save();
+        this.ctx.textAlign = 'center';
+        this.ctx.font = `bold ${fontSize}px "Press Start 2P"`;
+
+        // Flashing text color
+        this.ctx.fillStyle = flash ? '#ff3333' : '#ffffff';
+        this.ctx.fillText('GO!', 700, 395);
+
+        // Blinking arrow
+        if (Math.sin(t / 300) > 0) {
+            this.ctx.font = `bold ${fontSize}px "Press Start 2P"`;
+            this.ctx.fillText('>>>', 700, 430);
+        }
+
+        this.ctx.restore();
     }
   }
 
-  private loop() {
+  private loop(timestamp: number = 0) {
     if (!this.isRunning) return;
+
+    // Calculate delta time (normalize to 60fps baseline)
+    if (this.lastFrameTime === 0) this.lastFrameTime = timestamp;
+    const rawDelta = (timestamp - this.lastFrameTime) / (1000 / 60);
+    // Clamp delta to prevent teleporting after tab switch or long pause
+    this.deltaTime = Math.min(rawDelta, 3);
+    this.lastFrameTime = timestamp;
+
     this.update();
     this.draw();
-    this.animationFrameId = requestAnimationFrame(() => this.loop());
+    this.animationFrameId = requestAnimationFrame((ts) => this.loop(ts));
   }
 
   private updateStats() {
