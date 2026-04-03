@@ -106,24 +106,43 @@ export class Enemy extends Entity {
         this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'bossTwo_idle' });
         this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'bossTwo_death' });
       } else {
-        // BossOne (Phase 3) — Muscular walk sprite (3 columns × 2 rows, 6 frames)
+        // BossOne (Phase 3) — New sprite sheet (5 columns × 3 rows, 5 frames per animation)
+        // Row 0: Running, Row 1: Attack, Row 2: Special
         this.spriteScale = 1.2;
-        this.spriteManager.register('bossOne_walk', {
-          path: '/sprite/bossWalkSprite.png',
-          frameCount: 6,
-          columns: 3,
-          rows: 2,
+
+        this.spriteManager.register('bossOne_running', {
+          path: '/sprite/bossOneSprite.png',
+          frameCount: 5,
+          columns: 5,
+          rows: 3,
+          startFrame: 0,  // Row 0
+          offsetY: -6,
+        });
+        this.spriteManager.register('bossOne_attack', {
+          path: '/sprite/bossOneSprite.png',
+          frameCount: 5,
+          columns: 5,
+          rows: 3,
+          startFrame: 5,  // Row 1
+          offsetY: -6,
+        });
+        this.spriteManager.register('bossOne_special', {
+          path: '/sprite/bossOneSprite.png',
+          frameCount: 5,
+          columns: 5,
+          rows: 3,
+          startFrame: 10, // Row 2
           offsetY: -6,
         });
 
-        this.spriteStateMap.set(EntityState.IDLE, { spriteKey: 'bossOne_walk' });
-        this.spriteStateMap.set(EntityState.WALKING, { spriteKey: 'bossOne_walk' });
-        this.spriteStateMap.set(EntityState.ATTACKING_JAB, { spriteKey: 'bossOne_walk' });
-        this.spriteStateMap.set(EntityState.ATTACKING_STRAIGHT, { spriteKey: 'bossOne_walk' });
-        this.spriteStateMap.set(EntityState.WINDING_UP, { spriteKey: 'bossOne_walk' });
-        this.spriteStateMap.set(EntityState.DODGING, { spriteKey: 'bossOne_walk' });
-        this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'bossOne_walk' });
-        this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'bossOne_walk' });
+        this.spriteStateMap.set(EntityState.IDLE, { spriteKey: 'bossOne_running' });
+        this.spriteStateMap.set(EntityState.WALKING, { spriteKey: 'bossOne_running' });
+        this.spriteStateMap.set(EntityState.DODGING, { spriteKey: 'bossOne_running' });
+        this.spriteStateMap.set(EntityState.ATTACKING_JAB, { spriteKey: 'bossOne_attack' });
+        this.spriteStateMap.set(EntityState.ATTACKING_STRAIGHT, { spriteKey: 'bossOne_attack' });
+        this.spriteStateMap.set(EntityState.WINDING_UP, { spriteKey: 'bossOne_attack' });
+        this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'bossOne_special' });
+        this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'bossOne_special' });
       }
     }
   }
