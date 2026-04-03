@@ -19,7 +19,7 @@ export const ANIMATION_DATA: Record<EntityState, AnimationConfig> = {
   [EntityState.WALKING]: { frames: 6, speed: 8, loop: true },
   [EntityState.ATTACKING_JAB]: { frames: 6, speed: 5, loop: false, activeFrames: [2, 3] },
   [EntityState.ATTACKING_STRAIGHT]: { frames: 6, speed: 6, loop: false, activeFrames: [2, 3, 4] },
-  [EntityState.WINDING_UP]: { frames: 3, speed: 10, loop: true },
+  [EntityState.WINDING_UP]: { frames: 5, speed: 10, loop: true },
   [EntityState.DODGING]: { frames: 4, speed: 5, loop: false },
   [EntityState.HIT]: { frames: 2, speed: 10, loop: false },
   [EntityState.DEAD]: { frames: 5, speed: 12, loop: false },

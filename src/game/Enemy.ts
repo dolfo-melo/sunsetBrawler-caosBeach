@@ -57,7 +57,7 @@ export class Enemy extends Entity {
         this.spriteScale = 1.8;
 
         this.spriteManager.register('bossTwo_idle', {
-          path: '/sprite/bossTwoSprite.webp',
+          path: '/sprite/bossTwo/bossTwoSprite.webp',
           frameCount: 5,
           columns: 7,
           rows: 5,
@@ -65,7 +65,7 @@ export class Enemy extends Entity {
           offsetY: 0,
         });
         this.spriteManager.register('bossTwo_walk', {
-          path: '/sprite/bossTwoSprite.webp',
+          path: '/sprite/bossTwo/bossTwoSprite.webp',
           frameCount: 5,
           columns: 7,
           rows: 5,
@@ -73,7 +73,7 @@ export class Enemy extends Entity {
           offsetY: 0,
         });
         this.spriteManager.register('bossTwo_attack1', {
-          path: '/sprite/bossTwoSprite.webp',
+          path: '/sprite/bossTwo/bossTwoSprite.webp',
           frameCount: 5,
           columns: 7,
           rows: 5,
@@ -81,7 +81,7 @@ export class Enemy extends Entity {
           offsetY: 0,
         });
         this.spriteManager.register('bossTwo_attack2', {
-          path: '/sprite/bossTwoSprite.webp',
+          path: '/sprite/bossTwo/bossTwoSprite.webp',
           frameCount: 5,
           columns: 7,
           rows: 5,
@@ -89,7 +89,7 @@ export class Enemy extends Entity {
           offsetY: 0,
         });
         this.spriteManager.register('bossTwo_death', {
-          path: '/sprite/bossTwoSprite.webp',
+          path: '/sprite/bossTwo/bossTwoSprite.webp',
           frameCount: 5,
           columns: 7,
           rows: 5,
@@ -106,32 +106,32 @@ export class Enemy extends Entity {
         this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'bossTwo_idle' });
         this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'bossTwo_death' });
       } else {
-        // BossOne (Phase 3) — New sprite sheet (5 columns × 3 rows, 5 frames per animation)
-        // Row 0: Running, Row 1: Attack, Row 2: Special
+        // BossOne (Phase 3) — Separate sprite sheets (640x128, 5 frames at 128x128 each)
+        // Each animation is its own file: Running, Attack, Special
         this.spriteScale = 1.2;
 
         this.spriteManager.register('bossOne_running', {
-          path: '/sprite/bossOneSprite.png',
+          path: '/sprite/bossOne/bossOneRunning.png',
           frameCount: 5,
           columns: 5,
-          rows: 3,
-          startFrame: 0,  // Row 0
+          rows: 1,
+          startFrame: 0,
           offsetY: -6,
         });
         this.spriteManager.register('bossOne_attack', {
-          path: '/sprite/bossOneSprite.png',
+          path: '/sprite/bossOne/bossOneAttack.png',
           frameCount: 5,
           columns: 5,
-          rows: 3,
-          startFrame: 5,  // Row 1
+          rows: 1,
+          startFrame: 0,
           offsetY: -6,
         });
         this.spriteManager.register('bossOne_special', {
-          path: '/sprite/bossOneSprite.png',
+          path: '/sprite/bossOne/bossOneSpecial.png',
           frameCount: 5,
           columns: 5,
-          rows: 3,
-          startFrame: 10, // Row 2
+          rows: 1,
+          startFrame: 0,
           offsetY: -6,
         });
 
@@ -140,7 +140,7 @@ export class Enemy extends Entity {
         this.spriteStateMap.set(EntityState.DODGING, { spriteKey: 'bossOne_running' });
         this.spriteStateMap.set(EntityState.ATTACKING_JAB, { spriteKey: 'bossOne_attack' });
         this.spriteStateMap.set(EntityState.ATTACKING_STRAIGHT, { spriteKey: 'bossOne_attack' });
-        this.spriteStateMap.set(EntityState.WINDING_UP, { spriteKey: 'bossOne_attack' });
+        this.spriteStateMap.set(EntityState.WINDING_UP, { spriteKey: 'bossOne_special' });
         this.spriteStateMap.set(EntityState.HIT, { spriteKey: 'bossOne_special' });
         this.spriteStateMap.set(EntityState.DEAD, { spriteKey: 'bossOne_special' });
       }
@@ -182,7 +182,7 @@ export class Enemy extends Entity {
       if (Math.random() < 0.02) {
         this.isChargingBlast = true;
         this.blastChargeTimer = 60;
-        this.setState(EntityState.IDLE);
+        this.setState(EntityState.WINDING_UP);
         return;
       }
     }
@@ -231,7 +231,7 @@ export class Enemy extends Entity {
       this.x += this.facing * (this.speed * 2.8);
     }
 
-    if (this.state === EntityState.WINDING_UP) {
+    if (this.state === EntityState.WINDING_UP && !this.isChargingBlast && !this.blastActive) {
       this.windupTimer--;
       if (this.windupTimer <= 0) this.setState(this.nextAttackType);
     }
@@ -247,6 +247,10 @@ export class Enemy extends Entity {
       }
     }
     if (this.blastActive) {
+      // Keep the special animation playing during blast
+      if (this.state !== EntityState.WINDING_UP) {
+        this.setState(EntityState.WINDING_UP);
+      }
       this.blastRadius += (this.MAX_BLAST_RADIUS * this.scale) / 60;
       if (this.blastRadius > this.MAX_BLAST_RADIUS * this.scale) {
           this.blastActive = false;

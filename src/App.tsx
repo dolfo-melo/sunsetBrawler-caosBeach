@@ -121,7 +121,7 @@ const App: React.FC = () => {
 
   if (gameState === 'menu') {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-4 cursor-pointer" title="Click anywhere to start the beat">
+      <div className="game-wrapper min-h-screen flex flex-col items-center justify-center bg-slate-900 text-white p-4 cursor-pointer" title="Click anywhere to start the beat">
         <div className="max-w-xl w-full text-center space-y-8 animate-in fade-in zoom-in duration-700">
            <div className="relative inline-block">
              <h1 className="text-6xl font-black italic tracking-tighter text-yellow-400 drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)] transform -rotate-2">
@@ -195,7 +195,7 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4 bg-slate-900 text-white select-none">
+    <div className="game-wrapper min-h-screen flex flex-col items-center justify-center p-4 bg-slate-900 text-white select-none">
       {/* HUD Header */}
       <div className="w-full max-w-[800px] flex justify-between items-end mb-6 border-b-4 border-slate-700 pb-3">
         <div className="flex flex-col">

@@ -1,0 +1,107 @@
+/* ===================================
+   Sunset Brawler - Responsive Styles
+   =================================== */
+
+/* Mobile/Tablet blocker overlay */
+.mobile-blocker {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  text-align: center;
+  font-family: 'Press Start 2P', cursive;
+  color: #fff;
+}
+
+.mobile-blocker__icon {
+  font-size: 4rem;
+  margin-bottom: 1.5rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.mobile-blocker__title {
+  font-size: 1.25rem;
+  color: #facc15;
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  text-shadow: 0 4px 10px rgba(250, 204, 21, 0.3);
+}
+
+.mobile-blocker__message {
+  font-size: 0.6rem;
+  color: #94a3b8;
+  max-width: 320px;
+  line-height: 1.8;
+  margin-bottom: 2rem;
+}
+
+.mobile-blocker__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(30, 41, 59, 0.8);
+  border: 2px solid #334155;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.5rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+.mobile-blocker__badge-icon {
+  font-size: 1.2rem;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(250, 204, 21, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(250, 204, 21, 0.4); }
+}
+
+/* Show blocker on tablets and phones (below 1024px width OR below 600px height) */
+@media (max-width: 1023px), (max-height: 599px) {
+  .mobile-blocker {
+    display: flex;
+  }
+
+  #root {
+    display: none !important;
+  }
+}
+
+/* ===================================
+   Desktop Responsive Scaling
+   =================================== */
+
+/* Scale down for screens where 800px canvas + UI don't fit comfortably */
+/* For viewports with limited height (1080p with browser chrome = ~920-960px usable) */
+@media (max-height: 900px) and (min-width: 1024px) {
+  .game-wrapper {
+    transform: scale(0.85);
+    transform-origin: top center;
+  }
+}
+
+@media (max-height: 800px) and (min-width: 1024px) {
+  .game-wrapper {
+    transform: scale(0.75);
+    transform-origin: top center;
+  }
+}
+
+@media (max-height: 700px) and (min-width: 1024px) {
+  .game-wrapper {
+    transform: scale(0.65);
+    transform-origin: top center;
+  }
+}
